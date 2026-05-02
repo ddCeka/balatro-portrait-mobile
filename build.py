@@ -588,7 +588,7 @@ def main():
             config["crt"] = _ask("     Apply CRT patch?", default=False)
             print()
             print("  2. Readabletro")
-            print("     Replaces the pixel font with TypoQuik-Bold and adds")
+            print("     Replaces the pixel font with nunito-font and adds")
             print("     high-resolution card and UI textures.")
             config["readabletro"] = _ask("     Apply Readabletro?", default=False)
             print()
