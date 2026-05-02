@@ -29,7 +29,6 @@ import re
 import shutil
 import subprocess
 import sys
-import tarfile
 import time
 import urllib.request
 import zipfile
@@ -41,24 +40,9 @@ import zipfile
 CONFIG_FILE = ".buildconfig.json"
 CACHE_FILE  = ".build_cache.json"
 
-WORKDIR  = os.path.abspath("balatro-mobile-maker")
-JDK_DIR  = os.path.join(WORKDIR, "jdk")
+WORKDIR  = os.path.abspath("build")
+JDK_DIR  = os.environ.get("JAVA_HOME")
 JAVA_BIN = os.path.join(JDK_DIR, "bin", "java")  # resolved after JDK extraction
-
-if os.name == "nt":
-    JDK_URL = "https://aka.ms/download-jdk/microsoft-jdk-21.0.3-windows-x64.zip"
-elif platform.system() == "Darwin":
-    JDK_URL = (
-        "https://aka.ms/download-jdk/microsoft-jdk-21.0.3-macos-aarch64.tar.gz"
-        if platform.machine() == "arm64"
-        else "https://aka.ms/download-jdk/microsoft-jdk-21.0.3-macos-x64.tar.gz"
-    )
-else:
-    JDK_URL = "https://aka.ms/download-jdk/microsoft-jdk-21.0.3-linux-x64.tar.gz"
-
-APKTOOL_URL    = "https://github.com/iBotPeaches/Apktool/releases/download/v2.9.3/apktool_2.9.3.jar"
-SIGNER_URL     = "https://github.com/patrickfav/uber-apk-signer/releases/download/v1.3.0/uber-apk-signer-1.3.0.jar"
-PATCH_URL      = "https://github.com/blake502/balatro-apk-maker/releases/download/Additional-Tools-1.0/Balatro-APK-Patch.zip"
 LOVE_APK_URL   = "https://github.com/love2d/love-android/releases/download/11.5a/love-11.5-android-embed.apk"
 LOVELY_APK_URL = "https://lmm.shorty.systems/base.apk"
 
@@ -72,23 +56,23 @@ READABLETRO_LUA_PATCHES = {
     "game.lua": [
         (
             '{file = "resources/fonts/m6x11plus.ttf", render_scale = self.TILESIZE*10, TEXT_HEIGHT_SCALE = 0.83, TEXT_OFFSET = {x=10,y=-20}, FONTSCALE = 0.1, squish = 1, DESCSCALE = 1}',
-            '{file = "resources/fonts/TypoQuik-Bold.ttf", render_scale = self.TILESIZE*10, TEXT_HEIGHT_SCALE = 0.83, TEXT_OFFSET = {x=10,y=-20}, FONTSCALE = 0.1, squish = 1, DESCSCALE = 1}',
+            '{file = "resources/fonts/nunito-font.tty", render_scale = self.TILESIZE*10, TEXT_HEIGHT_SCALE = 0.83, TEXT_OFFSET = {x=10,y=-20}, FONTSCALE = 0.1, squish = 1, DESCSCALE = 1}',
         ),
         (
             '{file = "resources/fonts/m6x11plus.ttf", render_scale = self.TILESIZE*10, TEXT_HEIGHT_SCALE = 0.9, TEXT_OFFSET = {x=10,y=15}, FONTSCALE = 0.1, squish = 1, DESCSCALE = 1}',
-            '{file = "resources/fonts/TypoQuik-Bold.ttf", render_scale = self.TILESIZE*10, TEXT_HEIGHT_SCALE = 0.83, TEXT_OFFSET = {x=10,y=-20}, FONTSCALE = 0.1, squish = 1, DESCSCALE = 1}',
+            '{file = "resources/fonts/nunito-font.tty", render_scale = self.TILESIZE*10, TEXT_HEIGHT_SCALE = 0.83, TEXT_OFFSET = {x=10,y=-20}, FONTSCALE = 0.1, squish = 1, DESCSCALE = 1}',
         ),
     ],
     "main.lua": [
         (
             'local font = love.graphics.setNewFont("resources/fonts/m6x11plus.ttf", 20)',
-            'local font = love.graphics.setNewFont("resources/fonts/TypoQuik-Bold.ttf", 20)',
+            'local font = love.graphics.setNewFont("resources/fonts/nunito-font.tty", 20)',
         ),
     ],
     "functions/misc_functions.lua": [
         (
             'font = love.graphics.setNewFont("resources/fonts/m6x11plus.ttf", 20),',
-            'font = love.graphics.setNewFont("resources/fonts/TypoQuik-Bold.ttf", 20),',
+            'font = love.graphics.setNewFont("resources/fonts/nunito-font.tty", 20),',
         ),
     ],
 }
@@ -108,18 +92,6 @@ class BuildProfiler:
 
     def record(self, name, duration):
         self.steps.append((name, duration))
-
-    def report(self):
-        total = sum(d for _, d in self.steps)
-        wall  = time.time() - self._wall
-        sep = "-" * 50
-        print(f"\n{sep}")
-        print("Build time breakdown:")
-        for name, d in self.steps:
-            pct = d / total * 100 if total else 0
-            print(f"  {name:<28}  {d:>5.1f}s  ({pct:.0f}%)")
-        print(f"  {'Total':<28}  {wall:>5.1f}s")
-        print(sep)
 
 
 class _Step:
@@ -186,17 +158,17 @@ def _download(url, dest):
 # ─────────────────────────────────────────────────────────────────────────────
 
 def setup_resources(balatro_path=None):
-    """Extract resources and localization from Balatro.exe into src/."""
+    """Extract resources and localization from Balatro executable into src/."""
     script_dir      = os.path.dirname(os.path.abspath(__file__))
     game_files_dir  = os.path.join(script_dir, "game_original_files")
     src_dir         = os.path.join(script_dir, "src")
 
     if not balatro_path:
         print()
-        print("  Path to Balatro.exe:")
+        print("  Path to Balatro executable:")
         print("    Windows  D:\\Steam\\steamapps\\common\\Balatro\\Balatro.exe")
-        print("    Linux    ~/.steam/steam/steamapps/common/Balatro/Balatro.exe")
-        print("    macOS    ~/Library/Application Support/Steam/steamapps/common/Balatro/Balatro.exe")
+        print("    Linux    ~/.steam/steam/steamapps/common/Balatro/Balatro.love")
+        print("    macOS    ~/Library/Application Support/Steam/steamapps/common/Balatro/Balatro.love")
         balatro_path = input("  > ").strip().strip('"').strip("'")
 
     if not os.path.exists(balatro_path):
@@ -219,7 +191,7 @@ def setup_resources(balatro_path=None):
         src = os.path.join(game_files_dir, folder)
         dst = os.path.join(src_dir, folder)
         if not os.path.exists(src):
-            print(f"  ERROR: '{folder}' not found inside Balatro.exe — wrong file?")
+            print(f"  ERROR: '{folder}' not found inside Balatro executable — wrong file?")
             sys.exit(1)
         print(f"  Copying {folder} ...")
         if os.path.exists(dst):
@@ -286,8 +258,8 @@ def _apply_crt_patch(src_dir, apply):
 
 
 def _apply_readabletro(src_dir, apply):
-    font_src        = os.path.join("patches", "readabletro", "fonts", "TypoQuik-Bold.ttf")
-    font_dst        = os.path.join(src_dir, "resources", "fonts", "TypoQuik-Bold.ttf")
+    font_src        = os.path.join("patches", "readabletro", "fonts", "nunito-font.tty")
+    font_dst        = os.path.join(src_dir, "resources", "fonts", "nunito-font.tty")
     shader_src_dir  = os.path.join("patches", "readabletro", "shaders")
     shader_dst_dir  = os.path.join(src_dir, "resources", "shaders")
     texture_src_dir = os.path.join("patches", "readabletro", "textures", "2x")
@@ -311,7 +283,7 @@ def _apply_readabletro(src_dir, apply):
             shutil.copy2(font_src, font_dst)
 
         os.makedirs(shader_dst_dir, exist_ok=True)
-        for shader in ("background.fs", "splash.fs"):
+        for shader in ("background.fs", "flame.fs", "splash.fs"):
             s_src = os.path.join(shader_src_dir, shader)
             s_dst = os.path.join(shader_dst_dir, shader)
             if os.path.exists(s_dst):
@@ -342,7 +314,7 @@ def _apply_readabletro(src_dir, apply):
                 os.remove(bak)
         if os.path.exists(font_dst):
             os.remove(font_dst)
-        for shader in ("background.fs", "splash.fs"):
+        for shader in ("background.fs", "flame.fs", "splash.fs"):
             s_dst = os.path.join(shader_dst_dir, shader)
             bak   = s_dst + ".bak"
             if os.path.exists(bak):
@@ -414,43 +386,23 @@ def build_game_love(apply_crt=False, apply_readabletro=False, force=False):
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _setup_jdk():
-    archive = os.path.join(WORKDIR, "openjdk.zip" if os.name == "nt" else "openjdk.tar.gz")
-    _download(JDK_URL, archive)
-
-    if not os.path.exists(JDK_DIR):
-        print("  Extracting JDK ...")
-        for item in os.listdir(WORKDIR):
-            p = os.path.join(WORKDIR, item)
-            if item.startswith("jdk-") and os.path.isdir(p):
-                shutil.rmtree(p)
-        if os.name == "nt":
-            with zipfile.ZipFile(archive) as z:
-                z.extractall(WORKDIR)
-        else:
-            with tarfile.open(archive, "r:gz") as t:
-                t.extractall(WORKDIR)
-        for item in os.listdir(WORKDIR):
-            if item.startswith("jdk-"):
-                shutil.move(os.path.join(WORKDIR, item), JDK_DIR)
-                break
-
+    # Locate java bin
     global JAVA_BIN
-    java_exe = "java.exe" if os.name == "nt" else "java"
-    for root, _, files in os.walk(JDK_DIR):
-        if java_exe in files and "bin" in root:
-            JAVA_BIN = os.path.join(root, java_exe)
-            if os.name != "nt":
-                os.chmod(JAVA_BIN, 0o755)
-            break
-    print(f"  Java: {JAVA_BIN}")
+    java_name = "java"
+    for root, dirs, files in os.walk(JDK_DIR):
+        if java_name in files and "bin" in root:
+            JAVA_BIN = os.path.join(root, java_name)
+    print(f"Using Java at: {JAVA_BIN}")
 
 
 def _java(jar, args):
-    result = subprocess.run([JAVA_BIN, "-jar", jar] + args, cwd=WORKDIR,
-                            capture_output=True, text=True)
+    cmd = [JAVA_BIN, "-jar", jar] + args
+    print(f"Running: {' '.join(cmd)}")
+    result = subprocess.run(cmd, cwd=WORKDIR, capture_output=True, text=True)
     if result.returncode != 0:
-        print(f"  ERROR:\n{result.stderr}")
-        sys.exit(1)
+        print(f"Command failed: {result.stderr}")
+        exit(1)
+    print(result.stdout)
 
 
 def build_apk(use_lovely=False, profiler=None):
@@ -468,15 +420,13 @@ def build_apk(use_lovely=False, profiler=None):
 
     apktool   = os.path.join(WORKDIR, "apktool.jar")
     signer    = os.path.join(WORKDIR, "uber-apk-signer.jar")
-    patch_zip = os.path.join(WORKDIR, "Balatro-APK-Patch.zip")
     base_apk  = os.path.join(WORKDIR, apk_fn)
 
     with p.step("JDK setup"):
         _setup_jdk()
 
     with p.step("Download tools"):
-        for url, dest in [(APKTOOL_URL, apktool), (SIGNER_URL, signer),
-                          (PATCH_URL, patch_zip), (apk_url, base_apk)]:
+        for url, dest in [(apk_url, base_apk)]:
             _download(url, dest)
 
     apk_out = os.path.join(WORKDIR, "balatro-apk")
@@ -487,18 +437,12 @@ def build_apk(use_lovely=False, profiler=None):
         _java(apktool, ["d", "-o", "balatro-apk", apk_fn])
 
     with p.step("Patch manifest"):
-        patch_dir = os.path.join(WORKDIR, "Balatro-APK-Patch")
-        if os.path.exists(patch_dir):
-            shutil.rmtree(patch_dir)
-        with zipfile.ZipFile(patch_zip) as z:
-            z.extractall(WORKDIR)
-
         manifest_path = os.path.join(apk_out, "AndroidManifest.xml")
 
         if use_lovely:
             with open(manifest_path) as f:
                 m = f.read()
-            m = m.replace("systems.shorty.lmm", "com.unofficial.balatro")
+            m = m.replace("systems.shorty.lmm", "com.balatro.android")
             m = re.sub(r'android:label="[^"]+"',         'android:label="Balatro"',          m)
             m = re.sub(r'\sandroid:debuggable="[^"]+"',  "",                                  m)
             m = re.sub(r'android:screenOrientation="[^"]+"', 'android:screenOrientation="portrait"', m)
@@ -512,7 +456,7 @@ def build_apk(use_lovely=False, profiler=None):
             with open(manifest_path) as f:
                 m = f.read()
             m = re.sub(r'android:versionCode="[^"]+"', f'android:versionCode="{int(time.time())}"', m)
-            m = re.sub(r'android:versionName="[^"]+"', 'android:versionName="1.0.0n-FULL-p1"',      m)
+            m = re.sub(r'android:versionName="[^"]+"', 'android:versionName="1.0.1o-FULL"',      m)
             for orient in ["landscape","sensorLandscape","userLandscape","reverseLandscape",
                            "fullSensor","sensor","nosensor","unspecified"]:
                 m = m.replace(f'screenOrientation="{orient}"', 'screenOrientation="portrait"')
@@ -555,21 +499,22 @@ def build_apk(use_lovely=False, profiler=None):
         print("  Signing APK ...")
         _java(signer, ["-a", "balatro.apk"])
 
-    p.report()
     label = "MODDED (Lovely)" if use_lovely else "VANILLA"
     print(f"\n{'=' * 60}")
     print(f"  Build complete — {label}")
-    print(f"  APK: balatro-mobile-maker/balatro-aligned-debugSigned.apk")
+    print(f"  APK: build/balatro-aligned-debugSigned.apk")
     print(f"{'=' * 60}")
+    print()
 
     if use_lovely:
         print()
         print("  Mod installation (requires root / Magisk):")
         print("  1. Install Material Files from Play Store")
         print("  2. Navigate to:")
-        print("       /data/user/0/com.unofficial.balatro/files/save/ASET/Mods/")
+        print("       /data/user/0/com.balatro.android/files/save/ASET/Mods/")
         print("  3. Place mod folders there and restart the game")
         print("  See docs/MODDING.md for details.")
+        print()
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -668,7 +613,7 @@ def main():
     if cli.get("skip_setup"):
         print("[1/3] Skipping resource setup (--skip-setup).")
     elif needs_setup:
-        print("[1/3] Game resources not found — extracting from Balatro.exe ...")
+        print("[1/3] Game resources not found — extracting from Balatro executable ...")
         setup_resources(balatro_path)
     else:
         print("[1/3] Resources already present.")
@@ -690,7 +635,7 @@ def main():
 
     print()
     print("  Install on device:")
-    print("    adb install balatro-mobile-maker/balatro-aligned-debugSigned.apk")
+    print("    adb install build/balatro-aligned-debugSigned.apk")
 
 
 if __name__ == "__main__":
