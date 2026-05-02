@@ -1,0 +1,69 @@
+Bug Fixes:
+- Fix CRT shader causing bottom-edge artifact on tall phones (Galaxy S23+)
+- Patched the flames animation so it looks like pc version
+- Fixed tutorial dialogue in portrait mode so the Next button is anchored below Jimbo's speech bubble instead of covering the text.
+- Fixed tutorial Next button and hand-info progression issues in portrait mode.
+- Fixed tutorial hand-info follow-up dialogue positioning so Jimbo stays visible.
+- Fixed a tutorial overlay nil crash during tutorial event cleanup.
+- Fixed Android profile rename keyboard not appearing in portrait mode.
+- Fixed text input crash when typing from the Android virtual keyboard.
+- Fixed duplicate character input while renaming profiles on Android.
+- Removed Android-wide touch haptic spam so haptics stay tied to card interactions.
+- Fixed Haptic Feedback toggle so disabling it fully stops Android vibration paths.
+- Restored Android haptics for card movement sounds such as cardSlide1/cardSlide2/card1/cardFan2.
+- Re-enabled stronger action haptics on Android while keeping the toggle behavior correct.
+- Added light haptics for toggle presses and option-cycle changes to improve UI feedback.
+- Fixed black bar appearing at bottom of screen after locking/unlocking phone during gameplay. Canvas now fully refreshes on resume via love.visible + love.draw size mismatch detection.
+- Fixed crash log not copying to clipboard. Crash screen now stays open until BACK/ESC is pressed. Font fallback chain added.
+- Fixed tooltips overflowing screen edges in portrait mode. Tooltips now dynamically flip anchor direction based on card position.
+- Fixed tutorial speech bubble rendering too high in portrait mode. Bubble now positions below Jimbo.
+- Fixed syntax error in common_events.lua preventing game launch.
+- Discard off-screen bug: changed from hardcoded +15 offset to relative positioning from play area.
+- Landscape resize black screen: canvas now updates even when landscape resize events are ignored on mobile.
+- Readabletro patch FileNotFoundError: destination directories are now created with os.makedirs before copying.
+- Build script .bak restore issue: backup files are always recreated from current source, preventing stale backups from reverting changes.
+
+Centralized Configuration:
+- Created portrait_config.lua: all scattered magic numbers (scale factors, margins, offsets, thresholds) now live in a single config table.
+- Dynamic aspect ratio scaling via get_portrait_scale(): adapts to phone (0.63), tall phone (0.58), tablet (0.70-0.80) automatically.
+
+Crash Reporting:
+- Crash log is now automatically copied to clipboard on crash (love.system.setClipboardText).
+- Crash log is saved to crash_log.txt file on disk.
+- Crash screen stays open until user presses BACK or ESC. No more auto-closing.
+
+Input Improvements:
+- Android back button: opens options menu during gameplay, closes overlay menus.
+- Touch cursor sync: force controller cursor to exact tap position for accurate hit-testing.
+
+Display & Layout:
+- Added setWrap('clampzero') on canvas in main.lua to prevent edge clamping
+- Added clear before canvas draw in game.lua to prevent stale frame content
+- Updated icon resources on android patch to match original.
+- Immersive mode: hides system bars for full-screen gaming on Android.
+- Keep screen alive: prevents display sleep during gameplay.
+- Adaptive HUD: vertical HUD scale adjusts 0.35-0.45 based on screen aspect ratio.
+- Smart tooltip anchoring: tooltips dynamically flip direction (above/below) based on card position and shift horizontally to stay within screen bounds.
+- Tutorial speech bubble repositioned for portrait mode: shows below Jimbo instead of above, moved lower on screen.
+
+Feature:
+- Added local storage documents permission for android 10 and below. (Save file now inside `Android/data` folder)
+- Modified love.apk so it support SAF storage permission. (work nicely on android under 13)
+- Pre-added some tools to `build` folder for faster process.
+- Added volume max patch from `volume=50` default to `volume=100`
+- Change the font from demo font to nunito font (optimized for smaller screen)
+- Font fallback chain: nunito -> m6x11plus -> system default.
+- Adapted the whole patching process to be capable to run on Termux
+
+Build System:
+- Updated apktool to current release v3.0.2
+- Incremental builds: file hash caching in .build_cache.json, skips rebuild if no source changes detected.
+- Sequential downloads: replaced parallel downloads with reliable sequential transfers using urllib with 120s timeout.
+- Download progress bars use ASCII-safe characters for Windows console compatibility.
+- build.py now checks for src/resources existence (not just src/) before prompting for setup.
+
+Settings:
+- Portrait-specific haptic toggle added to Game settings tab.
+- FPS cap configurable via portrait_config.fps_cap (default 60 on mobile).
+
+Full Changelog: https://github.com/ShaggyLorean/balatro-portrait-mobile/compare/v1.9.3...v1.9.4
