@@ -49,7 +49,7 @@ python build.py
 | Option | Default | Description |
 |--------|---------|-------------|
 | CRT patch | off | Applies the CRT-disabling portrait patch. The default 2.0 build keeps this off. |
-| Readabletro | on | Applies the [Readabletro](https://github.com/bladeSk/readabletro) mod: TypoQuik-Bold font, high-res card and UI textures. |
+| Readabletro | on | Applies the [Readabletro](https://github.com/bladeSk/readabletro) mod: nunito font, high-res card and UI textures. |
 | Lovely mod support | off | Embeds the [Lovely](https://github.com/ethangreen-dev/lovely-injector) runtime so mods can be loaded. Requires a rooted device. |
 
 You can also pass flags to skip the prompts:
@@ -69,7 +69,7 @@ Transfer the generated APK to your phone and install it.
 Or natively deploy via ADB if your device is plugged in:
 
 ```
-adb install balatro-mobile-maker/balatro-aligned-debugSigned.apk
+adb install build/balatro-aligned-debugSigned.apk
 ```
 
 ## Project Structure
