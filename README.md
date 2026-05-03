@@ -43,31 +43,21 @@ cd balatro-portrait-mobile
 python build.py
 ```
 
-The unified `build.py` script will automatically handle the entire process. If this is your first time, it will:
-1. **Ask for your Balatro.exe path** and automatically extract all necessary game files.
-2. **Present Optional Patches**:
-
-1. **CRT Shader Patch:**
-   - If you see a **black ellipse** covering part of the screen, enable this to disable CRT.
-   - If your game works fine, skip this to keep the CRT visual effects.
-
-2. **Readabletro Typography & Textures:**
-   - Enable to apply the [Readabletro](https://github.com/bladeSk/readabletro) mod.
-   - Replaces the pixel font with a smoother typography (nunito).
-   - Resolves texture bugs and replaces card/UI textures with high-resolution, anti-aliased variants.
-   - Fix the flame animations to actually match with PC version.
-
-3. **Lovely Mod Support:**
-   - Enable to embed the [Lovely](https://github.com/ethangreen-dev/lovely-injector) mod framework.
-   - You can also run the build silently with flags: `python build.py --crt --readabletro --with-lovely`
 
 *(Your configuration will be saved in `.buildconfig.json` for rapid, single-click rebuilds later)*
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| CRT patch | off | Applies the CRT-disabling portrait patch. The default 2.0 build keeps this off. |
+| Readabletro | on | Applies the [Readabletro](https://github.com/bladeSk/readabletro) mod: TypoQuik-Bold font, high-res card and UI textures. |
+| Lovely mod support | off | Embeds the [Lovely](https://github.com/ethangreen-dev/lovely-injector) runtime so mods can be loaded. Requires a rooted device. |
 
 You can also pass flags to skip the prompts:
 
 ```
-python build.py --no-crt --no-readabletro --with-lovely
-python build.py --balatro "/directory/to/balatro/game/Balatro executable" --force
+python build.py --no-crt --readabletro --no-lovely
+python build.py --balatro "D:\Steam\steamapps\common\Balatro\Balatro.exe" --force
+python build.py --balatro "~/Library/Application Support/Steam/steamapps/common/Balatro/Balatro.app" --force
 ```
 
 Run `python build.py --help` or check the top of `build.py` for all available flags.
