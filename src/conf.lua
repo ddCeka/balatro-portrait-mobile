@@ -9,6 +9,9 @@ function love.conf(t)
 	t.window.minwidth = 100
 	t.window.minheight = 100
 
+	-- Android External storage
+	t.externalstorage = true
+
 	-- Force portrait orientation on mobile at engine level
 	t.window.usedpiscale = true
 	t.modules.window = true

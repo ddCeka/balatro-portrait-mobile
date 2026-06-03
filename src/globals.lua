@@ -65,7 +65,7 @@ function Game:set_globals()
         self.F_VERTICAL_SETTINGS = true
         self.F_MOBILE_UI = true
         self.F_EXTERNAL_LINKS = false
-        self.F_HAPTIC = true
+        self.F_HAPTIC = false
     end
 
     if love.system.getOS() == 'Nintendo Switch' then
@@ -169,7 +169,7 @@ function Game:set_globals()
         language = 'en-us',
         screenshake = true,
         run_stake_stickers = false,
-        haptic_enabled = true,
+        haptic_enabled = false,
         rumble = self.F_RUMBLE,
         play_button_pos = 2,
         play_main_hand = 2,
@@ -177,7 +177,7 @@ function Game:set_globals()
         GAMESPEED = 1,
         paused = false,
         SOUND = {
-            volume = 50,
+            volume = 100,
             music_volume = 100,
             game_sounds_volume = 100,
         },
@@ -204,7 +204,7 @@ function Game:set_globals()
         GRAPHICS = {
             texture_scaling = 2,
             shadows = 'On',
-            crt = 70,
+            crt = 30,
             bloom = 1
         },
     }

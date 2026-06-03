@@ -1870,7 +1870,7 @@ end
 
 G.FUNCS.warn_lang = function(e)
   local _infotip_object = G.OVERLAY_MENU:get_UIE_by_ID('overlay_menu_infotip')
-  if (_infotip_object.config.set ~= e.config.ref_table.label) and (not G.F_NO_ACHIEVEMENTS) then 
+  if (_infotip_object.config.set ~= e.config.ref_table.label) then 
     _infotip_object.config.object:remove() 
     _infotip_object.config.object = UIBox{
       definition = overlay_infotip({e.config.ref_table.warning[1],e.config.ref_table.warning[2],e.config.ref_table.warning[3], lang = e.config.ref_table}),

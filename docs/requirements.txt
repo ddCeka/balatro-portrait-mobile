@@ -6,5 +6,6 @@
 # - urllib.request
 # - time
 
-# No external dependencies required!
-# Just Python 3.6+ is needed.
+# External dependencies
+# - Openjdk (tested with openjdk-21, and must set environment java home)
+# - Python (tested with python 3.13)

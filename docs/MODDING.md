@@ -6,7 +6,7 @@ Balatro Portrait Mobile supports the [Lovely](https://github.com/ethangreen-dev/
 
 ## Building with Lovely
 
-When running `build_apk.py`, select **yes** when asked about Lovely mod support:
+When running `build.py`, select **yes** when asked about Lovely mod support:
 
 ```
 Enable Lovely mod support? (y/n): y
@@ -15,7 +15,7 @@ Enable Lovely mod support? (y/n): y
 Or use the CLI flag:
 
 ```
-python build_apk.py --with-lovely
+python build.py --with-lovely
 ```
 
 This builds the APK using [Lovely Mobile Maker](https://github.com/WilsontheWolf/lovely-mobile-maker)'s base, which has `liblovely.so` embedded.
@@ -24,7 +24,7 @@ This builds the APK using [Lovely Mobile Maker](https://github.com/WilsontheWolf
 
 ### Requirements
 
-- [Material Files](https://play.google.com/store/apps/details?id=me.zhanghai.android.files) (free on Play Store)
+- Any file manager that support root management (material files or mixplorer)
 - A Lovely-enabled Balatro APK (built with `--with-lovely`)
 
 ### Steps
@@ -34,19 +34,13 @@ This builds the APK using [Lovely Mobile Maker](https://github.com/WilsontheWolf
 3. **Navigate to the mod directory:**
 
 ```
-/ > data > user > 0 > com.unofficial.balatro > files > save > ASET > Mods
+/data/user/0/com.balatro.android/files/save/ASET/Mods
 ```
 
-> This path is in the **root directory** (`/`), NOT in `Android/data/`. You must navigate from the root `/` of the filesystem in Material Files.
+> This path is in the **root directory** (`/`), NOT in `Android/data/`. You must navigate from the root `/` of the filesystem.
 
 4. **Copy your mod folders** into the `Mods` directory
 5. **Restart Balatro**
-
-### Full Path
-
-```
-/data/user/0/com.unofficial.balatro/files/save/ASET/Mods/
-```
 
 ### Mod Folder Structure Example
 
@@ -64,12 +58,12 @@ Mods/
 
 ## Troubleshooting
 
-### "Can't find /data/user/0/ in Material Files"
+### "Can't find /data/user/0/ in file manager"
 
-Material Files needs root-level filesystem access. When browsing:
+File Manager needs root-level filesystem access. When browsing:
 - Tap the path bar at the top
 - Type `/` and press Enter
-- Navigate through `data > user > 0 > com.unofficial.balatro`
+- Navigate through `data > user > 0 > com.balatro.android`
 
 ### "Mods folder doesn't exist"
 
@@ -92,7 +86,7 @@ If you have ADB set up, you can push mods directly:
 
 ```bash
 adb push MyMod /data/local/tmp/MyMod
-adb shell run-as com.unofficial.balatro cp -r /data/local/tmp/MyMod files/save/ASET/Mods/
+adb shell run-as com.balatro.android cp -r /data/local/tmp/MyMod files/save/ASET/Mods/
 ```
 
 ## Notes
